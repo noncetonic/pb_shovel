@@ -4,7 +4,7 @@ import re
 import argparse
 import json
 import requests
-import bs4
+
 #
 #   Title:  pb_shovel.py
 #   Author: Daxda
