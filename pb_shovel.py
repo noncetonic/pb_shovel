@@ -8,7 +8,7 @@ import requests
 #
 #   Title:  pb_shovel.py
 #   Author: Daxda
-#   Date:   15.03.2013
+#   Date:   15.03.1337 (time travel is possible bitches)
 #   Desc:   This script extracts the images on the image hosting site 'Photobucket'
 #           you pass either a single url with the -u/--url flag which points to
 #           either an album or a single image, the script then will extract the
