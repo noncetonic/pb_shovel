@@ -4,7 +4,7 @@ import re
 import argparse
 import json
 import requests
-import bs4
+
 #
 #   Title:  pb_shovel.py
 #   Author: Daxda
@@ -88,6 +88,8 @@ class Photobucket():
 
         self._collected_links = []
         for link in links:
+            if not link:
+                continue
             stderr.write("Visiting {0}\n".format(link))
             stderr.flush()
             try:
@@ -95,15 +97,9 @@ class Photobucket():
                 if not link or "photobucket.com/" not in link:
                     continue
 
-                # Modify the link when the page parameter is given, this is only the
-                # case when album links were defined.
-                if("page=" in link):
-                    link = link[:link.rindex("page")]
-                    link += "page="
-
                 # Obtain the source code of the current link
                 source = self._get_source(link)
-                if not source:
+                if not source or "Sorry, the requested page does not exist." in source:
                     stderr.write("\rFailed to obtain images from {0}!\n".format(link))
                     stderr.flush()
                     continue
@@ -111,6 +107,16 @@ class Photobucket():
                 # Handle either albums or single image files, this check decides
                 # which link is pointing to an album and which is not.
                 if(self._is_album(source, link)):
+                    # Modify the url to be able to iterate over each page
+                    if("page=" in link):
+                        # Remove the trailing number after the page parameter
+                        # we replace the number with our iterater variable
+                        link = link[:link.rindex("page")]
+                        link += "page="
+                    elif("sort=" in link and "page=" not in link):
+                        link += "&page="
+                    else:
+                        link += "?page="
                     # Since the current link is a link pointing to an album on Pb,
                     # we need to loop over each page and extract the images on it.
                     i = 1
@@ -118,7 +124,7 @@ class Photobucket():
                     while 1:
                         source = self._get_source(link + str(i))
                         if not source:
-                            stderr.write("\nFailed to obtain images from {0}!\n".format(link))
+                            stderr.write("\nFailed to obtain images of {0}!\n".format(link))
                             stderr.flush()
                             break
                         elif "End of album" in source:
@@ -238,6 +244,8 @@ class Photobucket():
         answer = False
         if("Links to share this album" in source or "page=" in url):
             answer = True
+        elif("collectionData" in source):
+            answer = True
         return answer
 
     def _get_source(self, url):
@@ -246,7 +254,7 @@ class Photobucket():
             req = requests.get(url)
             if req.status_code != requests.codes.ok:
                 raise requests.exceptions.RequestException
-            elif(self._is_album("", url) and req.url != url):
+            elif(self._is_album("", url) and "page=" not in req.url):
                 # The source of the passed url doesn't contain any signs whether
                 # or not the page parameter actually points to a valid page,
                 # it redirects to the first page when you try to visit page 6 when
