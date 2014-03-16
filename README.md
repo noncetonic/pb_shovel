@@ -14,3 +14,7 @@ optional arguments:
   -o OUTPUT_DIRECTORY, --output-directory OUTPUT_DIRECTORY The directory the extracted images getting saved in.
                         
   -a, --all-filetypes   Downloads all files regardless if it's a video or an image.
+
+## Installation
+---
+Simply run ```pip -r requirements``` to install required modules and off you go
